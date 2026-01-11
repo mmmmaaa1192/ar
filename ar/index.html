@@ -900,7 +900,7 @@
       }
       
       // スライダーからカメラ角度を更新
-      function updateCameraFromSliders() {
+      function updateCameraFromSliders(axis = null) {
         if (isUpdatingFromSlider) {
           return; // 既に更新中の場合はスキップ
         }
@@ -908,25 +908,48 @@
         isUpdatingFromSlider = true;
         
         try {
-          if (axisXSlider) {
-            const phi = parseFloat(axisXSlider.value);
-            console.log('X軸スライダーから角度を更新:', phi);
-            currentPhi = phi;
-            modelViewer.setAttribute('camera-orbit', `${currentTheta}deg ${currentPhi}deg ${currentRadius}%`);
+          // 変更されたスライダーに応じて角度を更新
+          if (axis === 'x' || axis === null) {
+            if (axisXSlider) {
+              const phi = parseFloat(axisXSlider.value);
+              console.log('X軸スライダーから角度を更新:', phi);
+              currentPhi = Math.max(0, Math.min(180, phi)); // 0-180度に制限
+            }
           }
           
-          if (axisYSlider) {
-            const theta = parseFloat(axisYSlider.value);
-            console.log('Y軸スライダーから角度を更新:', theta);
-            currentTheta = theta;
-            modelViewer.setAttribute('camera-orbit', `${currentTheta}deg ${currentPhi}deg ${currentRadius}%`);
+          if (axis === 'y' || axis === null) {
+            if (axisYSlider) {
+              const theta = parseFloat(axisYSlider.value);
+              console.log('Y軸スライダーから角度を更新:', theta);
+              // Y軸は-180から180度に正規化
+              currentTheta = ((theta % 360) + 360) % 360;
+              if (currentTheta > 180) currentTheta -= 360;
+            }
           }
+          
+          // カメラ角度を設定（両方の角度を一度に更新）
+          const orbitString = `${currentTheta}deg ${currentPhi}deg ${currentRadius}%`;
+          console.log('カメラ角度を設定:', orbitString);
+          
+          // 属性を設定
+          modelViewer.setAttribute('camera-orbit', orbitString);
+          
+          // プロパティも設定（念のため）
+          if (modelViewer.cameraOrbit !== undefined) {
+            modelViewer.cameraOrbit = orbitString;
+          }
+          
+          // 強制的に更新をトリガー
+          modelViewer.dispatchEvent(new Event('camera-change'));
           
           // Z軸は使用しない（実際の回転には影響しない）
         } catch (error) {
           console.error('スライダーからの角度更新エラー:', error);
         } finally {
-          isUpdatingFromSlider = false;
+          // 少し遅延させてからフラグをリセット（camera-changeイベントとの競合を防ぐ）
+          setTimeout(() => {
+            isUpdatingFromSlider = false;
+          }, 100);
         }
       }
       
@@ -939,12 +962,12 @@
           if (axisXValue) {
             axisXValue.textContent = value.toFixed(0) + '°';
           }
-          updateCameraFromSliders();
+          updateCameraFromSliders('x');
         });
         axisXSlider.addEventListener('change', (e) => {
           const value = parseFloat(e.target.value);
           console.log('X軸スライダーが確定されました:', value);
-          updateCameraFromSliders();
+          updateCameraFromSliders('x');
         });
       } else {
         console.error('X軸スライダーが見つかりません（イベントリスナー設定時）');
@@ -958,12 +981,12 @@
           if (axisYValue) {
             axisYValue.textContent = value.toFixed(0) + '°';
           }
-          updateCameraFromSliders();
+          updateCameraFromSliders('y');
         });
         axisYSlider.addEventListener('change', (e) => {
           const value = parseFloat(e.target.value);
           console.log('Y軸スライダーが確定されました:', value);
-          updateCameraFromSliders();
+          updateCameraFromSliders('y');
         });
       } else {
         console.error('Y軸スライダーが見つかりません（イベントリスナー設定時）');
