@@ -68,6 +68,31 @@
       border-color: #667eea;
     }
 
+    .model-viewer-container {
+      position: relative;
+      width: 100%;
+      height: 600px;
+      border-radius: 15px;
+      overflow: hidden;
+      background: #f5f5f5;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      cursor: grab;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    
+    model-viewer:active {
+      cursor: grabbing;
+    }
+
     .ar-button {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
@@ -109,15 +134,42 @@
       <button class="model-select-button active" data-model="na">NA</button>
       <button class="model-select-button" data-model="br">BR</button>
     </div>
+    
+    <div class="model-viewer-container">
+      <model-viewer
+        id="model-viewer"
+        src="lunette_wood_na.glb"
+        alt="3Dモデル"
+        camera-controls
+        shadow-intensity="1"
+        interaction-policy="allow-when-focused"
+        field-of-view="45deg"
+        camera-orbit="0deg 75deg 105%"
+        min-camera-orbit="auto 0deg 50%"
+        max-camera-orbit="auto 180deg 200%"
+        touch-action="none"
+        style="width: 100%; height: 100%;"
+      >
+        <div slot="poster" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+          <div style="text-align: center; color: #666;">
+            <p style="font-size: 18px; margin-bottom: 10px;">📦 3Dモデルを読み込み中...</p>
+            <p style="font-size: 14px;">しばらくお待ちください</p>
+          </div>
+        </div>
+      </model-viewer>
+    </div>
+    
     <a id="ar-link" href="lunette_wood_na.usdz" rel="ar" class="ar-button">
       ARで部屋に試し置きする 👋
     </a>
   </div>
 
+  <script type="module" src="./model-viewer.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const modelButtons = document.querySelectorAll('.model-select-button');
       const arLink = document.getElementById('ar-link');
+      const modelViewer = document.getElementById('model-viewer');
       
       modelButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -129,10 +181,12 @@
           // クリックされたボタンにactiveクラスを追加
           button.classList.add('active');
           
-          // ARリンクを更新
+          // 3DビューアーとARリンクを更新
           if (model === 'na') {
+            modelViewer.setAttribute('src', 'lunette_wood_na.glb');
             arLink.href = 'lunette_wood_na.usdz';
           } else if (model === 'br') {
+            modelViewer.setAttribute('src', 'lunette_wood_br.glb');
             arLink.href = 'lunette_wood_br.usdz';
           }
         });
