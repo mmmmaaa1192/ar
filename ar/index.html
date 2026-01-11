@@ -106,6 +106,21 @@
       cursor: not-allowed;
     }
 
+    .model-button {
+      transition: all 0.2s;
+    }
+
+    .model-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .model-button.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      color: white !important;
+      border-color: #667eea !important;
+    }
+
 
     .info {
       margin-top: 20px;
@@ -151,6 +166,26 @@
         right: 15px;
       }
 
+      .model-selector {
+        top: 15px;
+        left: 15px;
+        gap: 6px;
+      }
+
+      .model-button {
+        padding: 6px 12px;
+        font-size: 11px;
+      }
+
+      .ar-placement-toggle {
+        top: 15px;
+        right: 15px;
+      }
+
+      .ar-placement-toggle button {
+        padding: 6px 12px;
+        font-size: 11px;
+      }
     }
   </style>
 </head>
@@ -161,9 +196,9 @@
     
     <div class="model-viewer-container">
       <model-viewer
-        src="lunette_wood.glb"
-        ios-src="lunette_wood.usdz"
-        alt="Lunette Wood 3Dモデル"
+        src="lunette_wood_na.glb"
+        ios-src="lunette_wood_na.usdz"
+        alt="Lunette Wood NA 3Dモデル"
         ar
         ar-modes="webxr scene-viewer quick-look"
         ar-placement="wall"
@@ -193,6 +228,16 @@
         <p style="font-size: 18px; margin-bottom: 10px;">⚠️ モデルが読み込めません</p>
         <p style="font-size: 14px; margin-bottom: 10px;">ブラウザのコンソールでエラーを確認してください</p>
         <p style="font-size: 12px; color: #666;">ファイルが正しく配置されているか確認してください</p>
+      </div>
+      
+      <!-- モデル切り替えボタン -->
+      <div class="model-selector" style="position: absolute; top: 20px; left: 20px; z-index: 10; display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="model-button active" data-model="lunette_wood_na" style="background: rgba(255, 255, 255, 0.9); border: 2px solid #667eea; border-radius: 20px; padding: 8px 16px; font-size: 12px; font-weight: bold; color: #667eea; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: all 0.2s;">
+          NA
+        </button>
+        <button class="model-button" data-model="lunette_wood_br" style="background: rgba(255, 255, 255, 0.9); border: 2px solid #ccc; border-radius: 20px; padding: 8px 16px; font-size: 12px; font-weight: bold; color: #666; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: all 0.2s;">
+          BR
+        </button>
       </div>
       
       <!-- AR配置タイプ切り替えボタン -->
@@ -228,8 +273,65 @@
       const errorMessage = document.getElementById('error-message');
       const arButton = document.querySelector('.ar-button') || document.getElementById('ar-button-manual');
       const arPlacementButton = document.getElementById('ar-placement-button');
+      const modelButtons = document.querySelectorAll('.model-button');
       
       if (!modelViewer) return;
+      
+      // モデル切り替え機能
+      const models = {
+        'lunette_wood_na': {
+          glb: 'lunette_wood_na.glb',
+          usdz: 'lunette_wood_na.usdz',
+          name: 'NA'
+        },
+        'lunette_wood_br': {
+          glb: 'lunette_wood_br.glb',
+          usdz: 'lunette_wood_br.usdz',
+          name: 'BR'
+        }
+      };
+      
+      let currentModel = 'lunette_wood_na';
+      
+      // モデルを切り替える関数
+      function switchModel(modelKey) {
+        if (!models[modelKey]) {
+          console.error('モデルが見つかりません:', modelKey);
+          return;
+        }
+        
+        const model = models[modelKey];
+        console.log('モデルを切り替え:', model.name);
+        
+        // モデルを読み込み
+        modelViewer.setAttribute('src', model.glb);
+        modelViewer.setAttribute('ios-src', model.usdz);
+        modelViewer.setAttribute('alt', `Lunette Wood ${model.name} 3Dモデル`);
+        
+        currentModel = modelKey;
+        
+        // ボタンの表示を更新
+        modelButtons.forEach(button => {
+          const buttonModel = button.getAttribute('data-model');
+          if (buttonModel === modelKey) {
+            button.classList.add('active');
+            button.style.borderColor = '#667eea';
+            button.style.color = '#667eea';
+          } else {
+            button.classList.remove('active');
+            button.style.borderColor = '#ccc';
+            button.style.color = '#666';
+          }
+        });
+      }
+      
+      // モデル切り替えボタンのイベントリスナー
+      modelButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const modelKey = button.getAttribute('data-model');
+          switchModel(modelKey);
+        });
+      });
       
       // AR配置タイプの切り替え（壁用/床用）
       let currentARPlacement = 'wall'; // デフォルトは壁用
