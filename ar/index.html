@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3Dモデルビューア - Lunette Wood</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 30px;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 2em;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 1.1em;
+    }
+
+    .model-viewer-container {
+      position: relative;
+      width: 100%;
+      height: 600px;
+      border-radius: 15px;
+      overflow: hidden;
+      background: #f5f5f5;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      cursor: grab;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    
+    model-viewer:active {
+      cursor: grabbing;
+    }
+
+    .ar-button {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+      z-index: 10;
+    }
+
+    .ar-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+
+    .ar-button:active {
+      transform: translateY(0);
+    }
+
+    .axis-buttons {
+      position: absolute;
+      bottom: 80px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .axis-button {
+      width: 50px;
+      height: 50px;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .axis-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .axis-button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .axis-button.active {
+      opacity: 0.8;
+      transform: scale(0.95);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .axis-button.x-axis {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    }
+
+    .axis-button.y-axis {
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    }
+
+    .axis-button.z-axis {
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    }
+
+    .info {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .info h2 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 1.3em;
+    }
+
+    .info ul {
+      margin-left: 20px;
+      margin-top: 10px;
+    }
+
+    .info li {
+      margin-bottom: 5px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 1.5em;
+      }
+
+      .model-viewer-container {
+        height: 500px;
+      }
+
+      .ar-button {
+        padding: 12px 24px;
+        font-size: 14px;
+        bottom: 15px;
+        right: 15px;
+      }
+
+      .axis-buttons {
+        bottom: 70px;
+        right: 15px;
+        gap: 8px;
+      }
+
+      .axis-button {
+        width: 45px;
+        height: 45px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>✨ Lunette Wood 3Dモデル</h1>
+    <p class="subtitle">マウスやタッチで回転・拡大縮小できます</p>
+    
+    <div class="model-viewer-container">
+      <model-viewer
+        src="lunette_wood.glb"
+        ios-src="lunette_wood.usdz"
+        alt="Lunette Wood 3Dモデル"
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        camera-controls
+        shadow-intensity="1"
+        ar-scale="fixed"
+        interaction-policy="allow-when-focused"
+        field-of-view="45deg"
+        camera-orbit="0deg 75deg 105%"
+        min-camera-orbit="auto auto 50%"
+        max-camera-orbit="auto auto 200%"
+        touch-action="none"
+        style="width: 100%; height: 100%;"
+      >
+        <button slot="ar-button" class="ar-button">
+          ARで部屋に試し置きする 👋
+        </button>
+        <div slot="poster" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+          <div style="text-align: center; color: #666;">
+            <p style="font-size: 18px; margin-bottom: 10px;">📦 3Dモデルを読み込み中...</p>
+            <p style="font-size: 14px;">しばらくお待ちください</p>
+          </div>
+        </div>
+      </model-viewer>
+      <div id="error-message" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #d32f2f; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 100;">
+        <p style="font-size: 18px; margin-bottom: 10px;">⚠️ モデルが読み込めません</p>
+        <p style="font-size: 14px; margin-bottom: 10px;">ブラウザのコンソールでエラーを確認してください</p>
+        <p style="font-size: 12px; color: #666;">ファイルが正しく配置されているか確認してください</p>
+      </div>
+      
+      <!-- XYZ回転ボタン -->
+      <div class="axis-buttons">
+        <button class="axis-button x-axis" id="axis-x-button" data-axis="x">X</button>
+        <button class="axis-button y-axis" id="axis-y-button" data-axis="y">Y</button>
+        <button class="axis-button z-axis" id="axis-z-button" data-axis="z">Z</button>
+      </div>
+    </div>
+
+    <div class="info">
+      <h2>📱 使い方</h2>
+      <ul>
+        <li><strong>マウス操作:</strong> ドラッグで回転、ホイールでズーム</li>
+        <li><strong>タッチ操作:</strong> 1本指で回転、2本指でズーム</li>
+        <li><strong>AR機能:</strong> 「ARで部屋に試し置きする」ボタンをクリックして、実際の空間に配置できます</li>
+        <li><strong>iOS:</strong> iPhone/iPadではQuick Lookが自動的に使用されます</li>
+        <li><strong>Android:</strong> Scene Viewerが使用されます</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- model-viewerのライブラリを読み込み（必須） -->
+  <!-- 外部CDNが使えない環境のため、ローカルファイルを参照 -->
+  <script type="module" src="./model-viewer.min.js"></script>
+  <script>
+    // XYZボタンで回転操作
+    document.addEventListener('DOMContentLoaded', () => {
+      const modelViewer = document.querySelector('model-viewer');
+      const errorMessage = document.getElementById('error-message');
+      const axisXButton = document.getElementById('axis-x-button');
+      const axisYButton = document.getElementById('axis-y-button');
+      const axisZButton = document.getElementById('axis-z-button');
+      
+      if (!modelViewer) return;
+      
+      // モデルの読み込みが失敗した場合
+      modelViewer.addEventListener('error', (event) => {
+        console.error('モデルの読み込みエラー:', event);
+        if (errorMessage) {
+          errorMessage.style.display = 'block';
+        }
+      });
+      
+      // モデルが読み込まれたか確認（5秒後にチェック）
+      setTimeout(() => {
+        if (modelViewer.loaded === false && errorMessage) {
+          errorMessage.style.display = 'block';
+        }
+      }, 5000);
+      
+      // 現在のカメラ角度
+      let currentTheta = 0; // 水平回転（Y軸周り）
+      let currentPhi = 75;  // 垂直回転（X軸周り）
+      let currentRadius = 105; // 距離
+      
+      // カメラ角度を取得
+      function getCameraOrbit() {
+        try {
+          const orbit = modelViewer.getAttribute('camera-orbit') || '0deg 75deg 105%';
+          const parts = orbit.split(' ');
+          currentTheta = parseFloat(parts[0]) || 0;
+          currentPhi = parseFloat(parts[1]) || 75;
+          currentRadius = parseFloat(parts[2]) || 105;
+        } catch (e) {
+          console.debug('カメラ角度の取得エラー:', e);
+        }
+      }
+      
+      // カメラ角度を設定
+      function setCameraOrbit(theta, phi, radius) {
+        currentTheta = theta;
+        currentPhi = phi;
+        currentRadius = radius;
+        modelViewer.setAttribute('camera-orbit', `${theta}deg ${phi}deg ${radius}%`);
+      }
+      
+      // 初期値を取得
+      getCameraOrbit();
+      
+      // ボタン操作の状態
+      let activeAxis = null;
+      let startX = 0;
+      let startY = 0;
+      let startTheta = 0;
+      let startPhi = 0;
+      
+      // マウス/タッチイベント
+      function getEventPos(e) {
+        if (e.touches && e.touches.length > 0) {
+          return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+        return { x: e.clientX, y: e.clientY };
+      }
+      
+      // ボタンを押したとき
+      function startAxisRotation(axis, e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        activeAxis = axis;
+        const pos = getEventPos(e);
+        startX = pos.x;
+        startY = pos.y;
+        getCameraOrbit();
+        startTheta = currentTheta;
+        startPhi = currentPhi;
+        
+        // ボタンの視覚的フィードバック
+        const button = document.getElementById(`axis-${axis}-button`);
+        if (button) {
+          button.classList.add('active');
+        }
+        
+        // マウス移動とリリースのイベントリスナーを追加
+        document.addEventListener('mousemove', onAxisDrag);
+        document.addEventListener('touchmove', onAxisDrag);
+        document.addEventListener('mouseup', endAxisRotation);
+        document.addEventListener('touchend', endAxisRotation);
+      }
+      
+      // ドラッグ中
+      function onAxisDrag(e) {
+        if (!activeAxis) return;
+        e.preventDefault();
+        
+        const pos = getEventPos(e);
+        const deltaX = pos.x - startX;
+        const deltaY = pos.y - startY;
+        
+        // 回転感度
+        const sensitivity = 0.5;
+        
+        if (activeAxis === 'x') {
+          // X軸周りに回転（上下）
+          const newPhi = startPhi - deltaY * sensitivity;
+          setCameraOrbit(currentTheta, newPhi, currentRadius);
+        } else if (activeAxis === 'y') {
+          // Y軸周りに回転（左右）
+          const newTheta = startTheta + deltaX * sensitivity;
+          setCameraOrbit(newTheta, currentPhi, currentRadius);
+        } else if (activeAxis === 'z') {
+          // Z軸周りに回転（斜め/自由回転）
+          const newTheta = startTheta + deltaX * sensitivity;
+          const newPhi = startPhi - deltaY * sensitivity;
+          setCameraOrbit(newTheta, newPhi, currentRadius);
+        }
+      }
+      
+      // ドラッグ終了
+      function endAxisRotation(e) {
+        if (activeAxis) {
+          const button = document.getElementById(`axis-${activeAxis}-button`);
+          if (button) {
+            button.classList.remove('active');
+          }
+          
+          activeAxis = null;
+          
+          // イベントリスナーを削除
+          document.removeEventListener('mousemove', onAxisDrag);
+          document.removeEventListener('touchmove', onAxisDrag);
+          document.removeEventListener('mouseup', endAxisRotation);
+          document.removeEventListener('touchend', endAxisRotation);
+        }
+      }
+      
+      // ボタンにイベントリスナーを追加
+      if (axisXButton) {
+        axisXButton.addEventListener('mousedown', (e) => startAxisRotation('x', e));
+        axisXButton.addEventListener('touchstart', (e) => startAxisRotation('x', e));
+      }
+      
+      if (axisYButton) {
+        axisYButton.addEventListener('mousedown', (e) => startAxisRotation('y', e));
+        axisYButton.addEventListener('touchstart', (e) => startAxisRotation('y', e));
+      }
+      
+      if (axisZButton) {
+        axisZButton.addEventListener('mousedown', (e) => startAxisRotation('z', e));
+        axisZButton.addEventListener('touchstart', (e) => startAxisRotation('z', e));
+      }
+      
+      // カメラ変更を監視
+      modelViewer.addEventListener('camera-change', () => {
+        getCameraOrbit();
+      });
+    });
+  </script>
+</body>
+</html>
+
