@@ -6,7 +6,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>3Dモデルビューア - Lunette Wood</title>
+  <title>AR 3Dモデル</title>
   <style>
     * {
       margin: 0;
@@ -32,63 +32,57 @@
       padding: 30px;
       max-width: 1200px;
       width: 100%;
-    }
-
-    h1 {
       text-align: center;
-      color: #333;
-      margin-bottom: 10px;
-      font-size: 2em;
     }
 
-    .subtitle {
-      text-align: center;
-      color: #666;
-      margin-bottom: 30px;
-      font-size: 1.1em;
+    .button-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
     }
 
-    .model-viewer-container {
-      position: relative;
-      width: 100%;
-      height: 600px;
-      border-radius: 15px;
-      overflow: hidden;
-      background: #f5f5f5;
-      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+    .model-select-button {
+      background: rgba(102, 126, 234, 0.1);
+      color: #667eea;
+      border: 2px solid #667eea;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
-    model-viewer {
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      cursor: grab;
-      touch-action: none;
-      -webkit-user-select: none;
-      user-select: none;
+    .model-select-button:hover {
+      background: rgba(102, 126, 234, 0.2);
+      transform: translateY(-2px);
     }
-    
-    model-viewer:active {
-      cursor: grabbing;
+
+    .model-select-button.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-color: #667eea;
     }
 
     .ar-button {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       border: none;
-      padding: 15px 30px;
+      padding: 20px 40px;
       border-radius: 50px;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
       cursor: pointer;
       box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
       transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-      z-index: 10;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
+      text-decoration: none;
+      display: inline-block;
     }
 
     .ar-button:hover {
@@ -101,611 +95,49 @@
       opacity: 0.9;
     }
 
-    .ar-button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .model-button {
-      transition: all 0.2s;
-    }
-
-    .model-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    .model-button.active {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-      color: white !important;
-      border-color: #667eea !important;
-    }
-
-
-    .info {
-      margin-top: 20px;
-      padding: 20px;
-      background: #f8f9fa;
-      border-radius: 10px;
-      color: #555;
-      line-height: 1.6;
-    }
-
-    .info h2 {
-      color: #333;
-      margin-bottom: 10px;
-      font-size: 1.3em;
-    }
-
-    .info ul {
-      margin-left: 20px;
-      margin-top: 10px;
-    }
-
-    .info li {
-      margin-bottom: 5px;
-    }
-
     @media (max-width: 768px) {
-      .container {
-        padding: 20px;
-      }
-
-      h1 {
-        font-size: 1.5em;
-      }
-
-      .model-viewer-container {
-        height: 500px;
-      }
-
       .ar-button {
-        padding: 12px 24px;
-        font-size: 14px;
-        bottom: 15px;
-        right: 15px;
-      }
-
-      .model-selector {
-        top: 15px;
-        left: 15px;
-        gap: 6px;
-      }
-
-      .model-button {
-        padding: 6px 12px;
-        font-size: 11px;
-      }
-
-      .ar-placement-toggle {
-        top: 15px;
-        right: 15px;
-      }
-
-      .ar-placement-toggle button {
-        padding: 6px 12px;
-        font-size: 11px;
+        padding: 15px 30px;
+        font-size: 16px;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>✨ Lunette Wood 3Dモデル</h1>
-    <p class="subtitle">マウスやタッチで回転・拡大縮小できます</p>
-    
-    <div class="model-viewer-container">
-      <model-viewer
-        src="lunette_wood_na.glb"
-        ios-src="lunette_wood_na.usdz"
-        alt="Lunette Wood NA 3Dモデル"
-        ar
-        ar-modes="webxr scene-viewer quick-look"
-        ar-placement="wall"
-        quick-look-browsers="safari chrome"
-        camera-controls
-        shadow-intensity="1"
-        ar-scale="fixed"
-        interaction-policy="allow-when-focused"
-        field-of-view="45deg"
-        camera-orbit="0deg 75deg 105%"
-        min-camera-orbit="auto 0deg 50%"
-        max-camera-orbit="auto 180deg 200%"
-        touch-action="none"
-        style="width: 100%; height: 100%;"
-      >
-        <button slot="ar-button" class="ar-button" id="ar-button-manual">
-          ARで部屋に試し置きする 👋
-        </button>
-        <div slot="poster" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
-          <div style="text-align: center; color: #666;">
-            <p style="font-size: 18px; margin-bottom: 10px;">📦 3Dモデルを読み込み中...</p>
-            <p style="font-size: 14px;">しばらくお待ちください</p>
-          </div>
-        </div>
-      </model-viewer>
-      <div id="error-message" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #d32f2f; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 100;">
-        <p style="font-size: 18px; margin-bottom: 10px;">⚠️ モデルが読み込めません</p>
-        <p style="font-size: 14px; margin-bottom: 10px;">ブラウザのコンソールでエラーを確認してください</p>
-        <p style="font-size: 12px; color: #666;">ファイルが正しく配置されているか確認してください</p>
-      </div>
-      
-      <!-- モデル切り替えボタン -->
-      <div class="model-selector" style="position: absolute; top: 20px; left: 20px; z-index: 10; display: flex; gap: 8px; flex-wrap: wrap;">
-        <button class="model-button active" data-model="lunette_wood_na" style="background: rgba(255, 255, 255, 0.9); border: 2px solid #667eea; border-radius: 20px; padding: 8px 16px; font-size: 12px; font-weight: bold; color: #667eea; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: all 0.2s;">
-          NA
-        </button>
-        <button class="model-button" data-model="lunette_wood_br" style="background: rgba(255, 255, 255, 0.9); border: 2px solid #ccc; border-radius: 20px; padding: 8px 16px; font-size: 12px; font-weight: bold; color: #666; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: all 0.2s;">
-          BR
-        </button>
-      </div>
-      
-      <!-- AR配置タイプ切り替えボタン -->
-      <div class="ar-placement-toggle" style="position: absolute; top: 20px; right: 20px; z-index: 10;">
-        <button id="ar-placement-button" style="background: rgba(255, 255, 255, 0.9); border: 2px solid #667eea; border-radius: 20px; padding: 8px 16px; font-size: 12px; font-weight: bold; color: #667eea; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
-          🧱 壁用
-        </button>
-      </div>
-      
+    <div class="button-group">
+      <button class="model-select-button active" data-model="na">NA</button>
+      <button class="model-select-button" data-model="br">BR</button>
     </div>
-
-    <div class="info">
-      <h2>📱 使い方</h2>
-      <ul>
-        <li><strong>マウス操作:</strong> ドラッグで回転、ホイールでズーム</li>
-        <li><strong>タッチ操作:</strong> 1本指で回転、2本指でズーム</li>
-        <li><strong>AR機能（スマホ）:</strong> 「ARで部屋に試し置きする」ボタンをタップして、カメラで実際の空間に配置できます</li>
-        <li><strong>配置タイプ:</strong> 現在は壁取り付け用（wall）に設定されています</li>
-        <li><strong>iOS:</strong> iPhone/iPadではQuick Lookが自動的に使用されます（カメラアクセス許可が必要です）</li>
-        <li><strong>Android:</strong> Scene Viewerが使用されます（Chrome推奨）</li>
-        <li><strong>注意:</strong> AR機能を使用するには、カメラへのアクセス許可が必要です</li>
-      </ul>
-    </div>
+    <a id="ar-link" href="lunette_wood_na.usdz" rel="ar" class="ar-button">
+      ARで部屋に試し置きする 👋
+    </a>
   </div>
 
-  <!-- model-viewerのライブラリを読み込み（必須） -->
-  <!-- 外部CDNが使えない環境のため、ローカルファイルを参照 -->
-  <script type="module" src="./model-viewer.min.js"></script>
   <script>
-    // AR機能のサポートチェック
     document.addEventListener('DOMContentLoaded', () => {
-      const modelViewer = document.querySelector('model-viewer');
-      const errorMessage = document.getElementById('error-message');
-      const arButton = document.querySelector('.ar-button') || document.getElementById('ar-button-manual');
-      const arPlacementButton = document.getElementById('ar-placement-button');
-      const modelButtons = document.querySelectorAll('.model-button');
+      const modelButtons = document.querySelectorAll('.model-select-button');
+      const arLink = document.getElementById('ar-link');
       
-      if (!modelViewer) return;
-      
-      // モデル切り替え機能
-      const models = {
-        'lunette_wood_na': {
-          glb: 'lunette_wood_na.glb',
-          usdz: 'lunette_wood_na.usdz',
-          name: 'NA'
-        },
-        'lunette_wood_br': {
-          glb: 'lunette_wood_br.glb',
-          usdz: 'lunette_wood_br.usdz',
-          name: 'BR'
-        }
-      };
-      
-      let currentModel = 'lunette_wood_na';
-      
-      // モデルを切り替える関数
-      function switchModel(modelKey) {
-        if (!models[modelKey]) {
-          console.error('モデルが見つかりません:', modelKey);
-          return;
-        }
-        
-        const model = models[modelKey];
-        console.log('モデルを切り替え:', model.name);
-        
-        // モデルを読み込み
-        modelViewer.setAttribute('src', model.glb);
-        modelViewer.setAttribute('ios-src', model.usdz);
-        modelViewer.setAttribute('alt', `Lunette Wood ${model.name} 3Dモデル`);
-        
-        currentModel = modelKey;
-        
-        // ボタンの表示を更新
-        modelButtons.forEach(button => {
-          const buttonModel = button.getAttribute('data-model');
-          if (buttonModel === modelKey) {
-            button.classList.add('active');
-            button.style.borderColor = '#667eea';
-            button.style.color = '#667eea';
-          } else {
-            button.classList.remove('active');
-            button.style.borderColor = '#ccc';
-            button.style.color = '#666';
-          }
-        });
-      }
-      
-      // モデル切り替えボタンのイベントリスナー
       modelButtons.forEach(button => {
         button.addEventListener('click', () => {
-          const modelKey = button.getAttribute('data-model');
-          switchModel(modelKey);
+          const model = button.getAttribute('data-model');
+          
+          // すべてのボタンからactiveクラスを削除
+          modelButtons.forEach(btn => btn.classList.remove('active'));
+          
+          // クリックされたボタンにactiveクラスを追加
+          button.classList.add('active');
+          
+          // ARリンクを更新
+          if (model === 'na') {
+            arLink.href = 'lunette_wood_na.usdz';
+          } else if (model === 'br') {
+            arLink.href = 'lunette_wood_br.usdz';
+          }
         });
-      });
-      
-      // AR配置タイプの切り替え（壁用/床用）
-      let currentARPlacement = 'wall'; // デフォルトは壁用
-      
-      if (arPlacementButton) {
-        arPlacementButton.addEventListener('click', () => {
-          // 壁用と床用を切り替え
-          currentARPlacement = currentARPlacement === 'wall' ? 'floor' : 'wall';
-          modelViewer.setAttribute('ar-placement', currentARPlacement);
-          
-          // ボタンの表示を更新
-          if (currentARPlacement === 'wall') {
-            arPlacementButton.textContent = '🧱 壁用';
-            arPlacementButton.style.borderColor = '#667eea';
-            arPlacementButton.style.color = '#667eea';
-          } else {
-            arPlacementButton.textContent = '🪑 床用';
-            arPlacementButton.style.borderColor = '#2ecc71';
-            arPlacementButton.style.color = '#2ecc71';
-          }
-          
-          console.log('AR配置タイプを変更:', currentARPlacement);
-        });
-      }
-      
-      // AR機能のサポートチェック
-      function checkARSupport() {
-        // HTTPSチェック（GitHub Pagesは自動的にHTTPS）
-        const isSecure = location.protocol === 'https:' || location.hostname === 'localhost';
-        if (!isSecure && location.hostname !== 'localhost') {
-          console.warn('AR機能にはHTTPS接続が必要です');
-        }
-        
-        // WebXRのサポートチェック
-        if ('xr' in navigator) {
-          navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
-            if (supported) {
-              console.log('WebXR ARがサポートされています');
-            } else {
-              console.log('WebXR ARはサポートされていませんが、Scene ViewerやQuick Lookが使用可能です');
-            }
-          }).catch(() => {
-            console.log('WebXRのチェックに失敗しました');
-          });
-        }
-        
-        // iOSのQuick Lookチェック
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        if (isIOS) {
-          console.log('iOSデバイス: Quick Lookが使用可能です');
-        }
-        
-        // AndroidのScene Viewerチェック
-        const isAndroid = /Android/.test(navigator.userAgent);
-        if (isAndroid) {
-          console.log('Androidデバイス: Scene Viewerが使用可能です');
-        }
-      }
-      
-      // AR機能のサポートをチェック
-      checkARSupport();
-      
-      // デバッグ情報を表示
-      function showDebugInfo() {
-        console.log('=== AR機能デバッグ情報 ===');
-        console.log('model-viewer要素:', modelViewer);
-        console.log('AR属性:', modelViewer.hasAttribute('ar'));
-        console.log('AR modes:', modelViewer.getAttribute('ar-modes'));
-        console.log('現在のURL:', window.location.href);
-        console.log('プロトコル:', window.location.protocol);
-        console.log('ユーザーエージェント:', navigator.userAgent);
-        
-        // デバイス判定
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const isAndroid = /Android/.test(navigator.userAgent);
-        
-        console.log('モバイルデバイス:', isMobile);
-        console.log('iOS:', isIOS);
-        console.log('Android:', isAndroid);
-        
-        if (!isMobile) {
-          console.warn('⚠️ PCでアクセスしています。AR機能はスマホでのみ動作します。');
-          const infoDiv = document.querySelector('.info');
-          if (infoDiv) {
-            const warning = document.createElement('div');
-            warning.style.cssText = 'background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 15px; margin-top: 15px; color: #856404;';
-            warning.innerHTML = '<strong>⚠️ 注意:</strong> AR機能はスマホ（iPhone/Android）でのみ動作します。PCでは3Dモデルの表示のみ可能です。';
-            infoDiv.appendChild(warning);
-          }
-        }
-        
-        // Shadow DOMの確認
-        if (modelViewer.shadowRoot) {
-          console.log('Shadow DOMが存在します');
-          const arButtonSlot = modelViewer.shadowRoot.querySelector('.slot.ar-button');
-          if (arButtonSlot) {
-            console.log('ARボタンスロットが見つかりました');
-            console.log('ARボタンが有効:', arButtonSlot.classList.contains('enabled'));
-          } else {
-            console.warn('ARボタンスロットが見つかりません');
-          }
-        } else {
-          console.warn('Shadow DOMが存在しません');
-        }
-        
-        console.log('======================');
-      }
-      
-      showDebugInfo();
-      
-      // モデルが読み込まれた後にもう一度デバッグ情報を表示
-      modelViewer.addEventListener('load', () => {
-        setTimeout(showDebugInfo, 1000);
-      });
-      
-      // ARボタンの状態を確認
-      function checkARButton() {
-        if (arButton) {
-          console.log('ARボタンが見つかりました');
-          // ARボタンが有効かどうかを確認
-          const arButtonSlot = modelViewer.shadowRoot?.querySelector('.slot.ar-button');
-          if (arButtonSlot) {
-            console.log('ARボタンスロットが見つかりました');
-            const isEnabled = arButtonSlot.classList.contains('enabled');
-            console.log('ARボタンが有効:', isEnabled);
-            if (!isEnabled) {
-              console.warn('ARボタンが無効です。AR機能がサポートされていない可能性があります。');
-            }
-          }
-        } else {
-          console.warn('ARボタンが見つかりません');
-        }
-      }
-      
-      // モデルが読み込まれた後にARボタンを確認
-      modelViewer.addEventListener('load', () => {
-        console.log('モデルが読み込まれました');
-        setTimeout(checkARButton, 1000);
-      });
-      
-      // AR機能のサポートをチェック
-      let arSupported = false;
-      let arSupportReason = '';
-      
-      async function checkARSupportDetailed() {
-        const isSecure = location.protocol === 'https:' || location.hostname === 'localhost';
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const isAndroid = /Android/.test(navigator.userAgent);
-        const isSafari = /^((?!chrome|android).)*safari|iPhone|iPad)/i.test(navigator.userAgent);
-        const isChrome = /Chrome/.test(navigator.userAgent) && !/Edg/.test(navigator.userAgent);
-        const isEdge = /Edg/.test(navigator.userAgent);
-        const isFirefox = /Firefox/.test(navigator.userAgent);
-        
-        // HTTPSチェック
-        if (!isSecure && location.hostname !== 'localhost') {
-          arSupported = false;
-          arSupportReason = 'AR機能にはHTTPS接続が必要です。現在はHTTP接続です。';
-          return;
-        }
-        
-        // モバイルチェック
-        if (!isMobile) {
-          arSupported = false;
-          arSupportReason = 'AR機能はスマホ（iPhone/Android）でのみ動作します。PCでは使用できません。';
-          return;
-        }
-        
-        // iOSの場合
-        if (isIOS) {
-          // iOSではQuick Lookが使用可能（Safari推奨）
-          if (isSafari) {
-            arSupported = true;
-            arSupportReason = 'iOS Safari: Quick Lookが使用可能です';
-          } else {
-            // Safari以外のiOSブラウザでも試行
-            arSupported = true;
-            arSupportReason = 'iOS: Quick Lookを試行します（Safari推奨）';
-          }
-          return;
-        }
-        
-        // Androidの場合
-        if (isAndroid) {
-          // Chrome/Edge: Scene Viewerが使用可能
-          if (isChrome || isEdge) {
-            arSupported = true;
-            arSupportReason = 'Android Chrome/Edge: Scene Viewerが使用可能です';
-          } else if (isFirefox) {
-            // Firefox: WebXRを試行
-            if ('xr' in navigator) {
-              try {
-                const supported = await navigator.xr.isSessionSupported('immersive-ar');
-                arSupported = supported;
-                arSupportReason = supported ? 'Android Firefox: WebXR ARがサポートされています' : 'Android Firefox: WebXR ARはサポートされていません';
-              } catch (e) {
-                arSupported = false;
-                arSupportReason = 'Android Firefox: WebXRのチェックに失敗しました';
-              }
-            } else {
-              arSupported = false;
-              arSupportReason = 'Android Firefox: WebXRがサポートされていません。Chromeブラウザの使用を推奨します。';
-            }
-          } else {
-            arSupported = false;
-            arSupportReason = 'Android: Chromeブラウザの使用を推奨します。';
-          }
-          return;
-        }
-        
-        // その他のデバイス
-        if ('xr' in navigator) {
-          try {
-            const supported = await navigator.xr.isSessionSupported('immersive-ar');
-            arSupported = supported;
-            arSupportReason = supported ? 'WebXR ARがサポートされています' : 'WebXR ARはサポートされていません';
-          } catch (e) {
-            arSupported = false;
-            arSupportReason = 'WebXRのチェックに失敗しました';
-          }
-        } else {
-          arSupported = false;
-          arSupportReason = 'AR機能がサポートされていないブラウザです。';
-        }
-      }
-      
-      // AR機能のサポートをチェック（初期化時とモデル読み込み後）
-      checkARSupportDetailed().then(() => {
-        console.log('ARサポート:', arSupported, arSupportReason);
-      });
-      
-      // モデルが読み込まれた後にもう一度チェック
-      modelViewer.addEventListener('load', () => {
-        setTimeout(() => {
-          checkARSupportDetailed().then(() => {
-            console.log('ARサポート（再チェック）:', arSupported, arSupportReason);
-            
-            // ARボタンの状態を確認
-            const shadowRoot = modelViewer.shadowRoot;
-            if (shadowRoot) {
-              const arButtonSlot = shadowRoot.querySelector('.slot.ar-button');
-              if (arButtonSlot) {
-                const isEnabled = arButtonSlot.classList.contains('enabled');
-                console.log('ARボタンが有効:', isEnabled);
-                
-                // model-viewerがAR機能を無効にしている場合
-                if (!isEnabled && !arSupported) {
-                  console.warn('AR機能が無効になっています');
-                }
-              }
-            }
-          });
-        }, 1000);
-      });
-      
-      // ARボタンのクリックイベント
-      function handleARButtonClick(e) {
-        if (e) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-        console.log('ARボタンがクリックされました');
-        
-        // AR機能がサポートされていない場合
-        if (!arSupported) {
-          alert('AR機能が使用できません\n\n' + arSupportReason + '\n\n推奨:\n- iOS: Safariブラウザを使用\n- Android: Chromeブラウザを使用\n- HTTPS接続が必要です');
-          return;
-        }
-        
-        // 手動でARを開始
-        try {
-          // 方法1: activateAR()メソッドを使用
-          if (typeof modelViewer.activateAR === 'function') {
-            modelViewer.activateAR();
-            console.log('activateAR()を呼び出しました');
-            return;
-          }
-          
-          // 方法2: ARボタンを直接クリック
-          const shadowRoot = modelViewer.shadowRoot;
-          if (shadowRoot) {
-            const defaultARButton = shadowRoot.querySelector('#default-ar-button');
-            if (defaultARButton) {
-              defaultARButton.click();
-              console.log('デフォルトARボタンをクリックしました');
-              return;
-            }
-          }
-          
-          // 方法3: ARイベントを手動で発火
-          const arButtonSlot = shadowRoot?.querySelector('.slot.ar-button');
-          if (arButtonSlot && arButtonSlot.classList.contains('enabled')) {
-            const button = arButtonSlot.querySelector('a, button');
-            if (button) {
-              button.click();
-              console.log('ARボタンスロット内のボタンをクリックしました');
-              return;
-            }
-          }
-          
-          // AR機能が有効になっていない場合
-          console.warn('AR機能を開始する方法が見つかりませんでした');
-          alert('AR機能を開始できませんでした。\n\n' + arSupportReason + '\n\n確認事項:\n1. スマホでアクセスしていますか？\n2. HTTPS接続ですか？\n3. カメラへのアクセス許可を確認してください。\n4. 推奨ブラウザを使用していますか？\n   - iOS: Safari\n   - Android: Chrome');
-        } catch (error) {
-          console.error('AR開始エラー:', error);
-          alert('AR機能を開始できませんでした: ' + error.message + '\n\n' + arSupportReason);
-        }
-      }
-      
-      if (arButton) {
-        arButton.addEventListener('click', handleARButtonClick);
-        arButton.addEventListener('touchend', handleARButtonClick);
-      }
-      
-      // モデルが読み込まれた後、ARボタンが表示されるまで待つ
-      modelViewer.addEventListener('load', () => {
-        setTimeout(() => {
-          const shadowRoot = modelViewer.shadowRoot;
-          if (shadowRoot) {
-            const defaultARButton = shadowRoot.querySelector('#default-ar-button');
-            if (defaultARButton) {
-              console.log('デフォルトARボタンが見つかりました');
-              // カスタムARボタンが表示されない場合、デフォルトボタンを使用
-              if (!arButton || arButton.offsetParent === null) {
-                console.log('カスタムARボタンが表示されていないため、デフォルトボタンを使用します');
-              }
-            }
-          }
-        }, 2000);
-      });
-      
-      // ARセッションの開始を監視
-      modelViewer.addEventListener('ar-status', (event) => {
-        console.log('ARステータス:', event.detail.status);
-        if (event.detail.status === 'failed') {
-          console.error('ARセッションの開始に失敗しました');
-          alert('AR機能を開始できませんでした。\n\n考えられる原因:\n- カメラへのアクセス許可が必要です\n- HTTPS接続が必要です\n- デバイスがAR機能をサポートしていない可能性があります');
-        } else if (event.detail.status === 'session-started') {
-          console.log('ARセッションが開始されました');
-        } else if (event.detail.status === 'not-presenting') {
-          console.log('ARセッションが終了しました');
-        }
-      });
-      
-      // AR関連のイベントをすべて監視
-      ['ar-status', 'ar-tracking', 'ar-tracking-normal', 'ar-tracking-not-normal'].forEach(eventType => {
-        modelViewer.addEventListener(eventType, (event) => {
-          console.log(`ARイベント [${eventType}]:`, event.detail || event);
-        });
-      });
-      
-      // モデルの読み込みが失敗した場合
-      modelViewer.addEventListener('error', (event) => {
-        console.error('モデルの読み込みエラー:', event);
-        if (errorMessage) {
-          errorMessage.style.display = 'block';
-        }
-      });
-      
-      // モデルが読み込まれたか確認（5秒後にチェック）
-      setTimeout(() => {
-        if (modelViewer.loaded === false && errorMessage) {
-          errorMessage.style.display = 'block';
-        }
-      }, 5000);
-      
-      
-      // カメラ変更を監視
-      modelViewer.addEventListener('camera-change', () => {
-        getCameraOrbit();
       });
     });
   </script>
 </body>
 </html>
-
