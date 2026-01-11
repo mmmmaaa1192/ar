@@ -68,6 +68,39 @@
       border-color: #667eea;
     }
 
+    .ar-try-button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 20px 40px;
+      border-radius: 50px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      margin-top: 20px;
+      display: inline-block;
+    }
+
+    .ar-try-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+
+    .ar-try-button:active {
+      transform: translateY(0);
+      opacity: 0.9;
+    }
+
+    @media (max-width: 768px) {
+      .ar-try-button {
+        padding: 15px 30px;
+        font-size: 16px;
+      }
+    }
 
     .ar-button {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -84,6 +117,10 @@
       touch-action: manipulation;
       text-decoration: none;
       display: inline-block;
+      position: relative !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      z-index: 1000 !important;
     }
 
     .ar-button:hover {
@@ -111,6 +148,11 @@
       <button class="model-select-button" data-model="br">BR</button>
     </div>
     
+    <!-- AR試用ボタン -->
+    <button id="ar-try-button" class="ar-try-button">
+      ARで部屋に試し置きする 👋
+    </button>
+    
     <!-- AR専用のmodel-viewer（非表示） -->
     <model-viewer
       id="model-viewer-ar"
@@ -122,9 +164,9 @@
       ar-placement="wall"
       quick-look-browsers="safari chrome"
       ar-scale="fixed"
-      style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;"
+      style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; visibility: hidden;"
     >
-      <button slot="ar-button" id="ar-button-slot" class="ar-button" style="position: relative; opacity: 1; pointer-events: auto;">
+      <button slot="ar-button" id="ar-button-slot" class="ar-button">
         ARで部屋に試し置きする 👋
       </button>
     </model-viewer>
@@ -135,10 +177,16 @@
     document.addEventListener('DOMContentLoaded', () => {
       const modelButtons = document.querySelectorAll('.model-select-button');
       const modelViewerAR = document.getElementById('model-viewer-ar');
+      const arTryButton = document.getElementById('ar-try-button');
+      const arButtonSlot = document.getElementById('ar-button-slot');
+      
+      // 現在選択されているモデルを取得
+      let currentModel = 'na';
       
       modelButtons.forEach(button => {
         button.addEventListener('click', () => {
           const model = button.getAttribute('data-model');
+          currentModel = model;
           
           // すべてのボタンからactiveクラスを削除
           modelButtons.forEach(btn => btn.classList.remove('active'));
@@ -156,19 +204,35 @@
             usdzFile = 'lunette_wood_br.usdz';
           }
           
-          if (glbFile && usdzFile && modelViewerAR) {
-            // 一度srcを削除してから再設定
-            modelViewerAR.removeAttribute('src');
-            modelViewerAR.removeAttribute('ios-src');
-            // 少し待ってから新しいsrcを設定
-            setTimeout(() => {
-              modelViewerAR.setAttribute('src', glbFile);
-              modelViewerAR.setAttribute('ios-src', usdzFile);
-              console.log('ARビューアーを更新:', glbFile, usdzFile);
-            }, 50);
+          if (glbFile && usdzFile) {
+            // ARリンクを更新
+            const arLink = document.getElementById('ar-link');
+            if (arLink) {
+              arLink.href = usdzFile;
+              console.log('ARリンクを更新:', usdzFile);
+            }
+            
+            // AR用model-viewerも更新（念のため）
+            if (modelViewerAR) {
+              modelViewerAR.removeAttribute('src');
+              modelViewerAR.removeAttribute('ios-src');
+              setTimeout(() => {
+                modelViewerAR.setAttribute('src', glbFile);
+                modelViewerAR.setAttribute('ios-src', usdzFile);
+                console.log('ARビューアーを更新:', glbFile, usdzFile);
+              }, 50);
+            }
           }
         });
       });
+      
+      // AR試用ボタンのクリック処理
+      if (arTryButton && arButtonSlot) {
+        arTryButton.addEventListener('click', () => {
+          // model-viewerのARボタンをクリック
+          arButtonSlot.click();
+        });
+      }
       
       // エラーハンドリング
       if (modelViewerAR) {
