@@ -68,30 +68,6 @@
       border-color: #667eea;
     }
 
-    .model-viewer-container {
-      position: relative;
-      width: 100%;
-      height: 600px;
-      border-radius: 15px;
-      overflow: hidden;
-      background: #f5f5f5;
-      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
-    }
-
-    model-viewer {
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      cursor: grab;
-      touch-action: none;
-      -webkit-user-select: none;
-      user-select: none;
-    }
-    
-    model-viewer:active {
-      cursor: grabbing;
-    }
 
     .ar-button {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -135,41 +111,30 @@
       <button class="model-select-button" data-model="br">BR</button>
     </div>
     
-    <div class="model-viewer-container">
-      <model-viewer
-        id="model-viewer"
-        src="lunette_wood_na.glb"
-        alt="3Dモデル"
-        camera-controls
-        shadow-intensity="1"
-        interaction-policy="allow-when-focused"
-        field-of-view="45deg"
-        camera-orbit="0deg 75deg 105%"
-        min-camera-orbit="auto 0deg 50%"
-        max-camera-orbit="auto 180deg 200%"
-        touch-action="none"
-        style="width: 100%; height: 100%;"
-      >
-        <div slot="poster" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
-          <div style="text-align: center; color: #666;">
-            <p style="font-size: 18px; margin-bottom: 10px;">📦 3Dモデルを読み込み中...</p>
-            <p style="font-size: 14px;">しばらくお待ちください</p>
-          </div>
-        </div>
-      </model-viewer>
-    </div>
-    
-    <a id="ar-link" href="lunette_wood_na.usdz" rel="ar" class="ar-button">
-      ARで部屋に試し置きする 👋
-    </a>
+    <!-- AR専用のmodel-viewer（非表示） -->
+    <model-viewer
+      id="model-viewer-ar"
+      src="lunette_wood_na.glb"
+      ios-src="lunette_wood_na.usdz"
+      alt="AR 3Dモデル"
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      ar-placement="wall"
+      quick-look-browsers="safari chrome"
+      ar-scale="fixed"
+      style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;"
+    >
+      <button slot="ar-button" id="ar-button-slot" class="ar-button" style="position: relative; opacity: 1; pointer-events: auto;">
+        ARで部屋に試し置きする 👋
+      </button>
+    </model-viewer>
   </div>
 
   <script type="module" src="./model-viewer.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const modelButtons = document.querySelectorAll('.model-select-button');
-      const arLink = document.getElementById('ar-link');
-      const modelViewer = document.getElementById('model-viewer');
+      const modelViewerAR = document.getElementById('model-viewer-ar');
       
       modelButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -181,16 +146,36 @@
           // クリックされたボタンにactiveクラスを追加
           button.classList.add('active');
           
-          // 3DビューアーとARリンクを更新
+          // ARビューアーを更新
+          let glbFile, usdzFile;
           if (model === 'na') {
-            modelViewer.setAttribute('src', 'lunette_wood_na.glb');
-            arLink.href = 'lunette_wood_na.usdz';
+            glbFile = 'lunette_wood_na.glb';
+            usdzFile = 'lunette_wood_na.usdz';
           } else if (model === 'br') {
-            modelViewer.setAttribute('src', 'lunette_wood_br.glb');
-            arLink.href = 'lunette_wood_br.usdz';
+            glbFile = 'lunette_wood_br.glb';
+            usdzFile = 'lunette_wood_br.usdz';
+          }
+          
+          if (glbFile && usdzFile && modelViewerAR) {
+            // 一度srcを削除してから再設定
+            modelViewerAR.removeAttribute('src');
+            modelViewerAR.removeAttribute('ios-src');
+            // 少し待ってから新しいsrcを設定
+            setTimeout(() => {
+              modelViewerAR.setAttribute('src', glbFile);
+              modelViewerAR.setAttribute('ios-src', usdzFile);
+              console.log('ARビューアーを更新:', glbFile, usdzFile);
+            }, 50);
           }
         });
       });
+      
+      // エラーハンドリング
+      if (modelViewerAR) {
+        modelViewerAR.addEventListener('error', (e) => {
+          console.error('ARビューアーのエラー:', e);
+        });
+      }
     });
   </script>
 </body>
