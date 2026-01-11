@@ -231,7 +231,8 @@
         alt="Lunette Wood 3Dモデル"
         ar
         ar-modes="webxr scene-viewer quick-look"
-        ar-placement="floor"
+        ar-placement="wall"
+        quick-look-browsers="safari chrome"
         camera-controls
         shadow-intensity="1"
         ar-scale="fixed"
@@ -259,6 +260,13 @@
         <p style="font-size: 12px; color: #666;">ファイルが正しく配置されているか確認してください</p>
       </div>
       
+      <!-- AR配置タイプ切り替えボタン -->
+      <div class="ar-placement-toggle" style="position: absolute; top: 20px; right: 20px; z-index: 10;">
+        <button id="ar-placement-button" style="background: rgba(255, 255, 255, 0.9); border: 2px solid #667eea; border-radius: 20px; padding: 8px 16px; font-size: 12px; font-weight: bold; color: #667eea; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+          🧱 壁用
+        </button>
+      </div>
+      
       <!-- XYZ回転ボタン -->
       <div class="axis-buttons">
         <button class="axis-button x-axis" id="axis-x-button" data-axis="x">X</button>
@@ -273,6 +281,7 @@
         <li><strong>マウス操作:</strong> ドラッグで回転、ホイールでズーム</li>
         <li><strong>タッチ操作:</strong> 1本指で回転、2本指でズーム</li>
         <li><strong>AR機能（スマホ）:</strong> 「ARで部屋に試し置きする」ボタンをタップして、カメラで実際の空間に配置できます</li>
+        <li><strong>配置タイプ:</strong> 現在は壁取り付け用（wall）に設定されています</li>
         <li><strong>iOS:</strong> iPhone/iPadではQuick Lookが自動的に使用されます（カメラアクセス許可が必要です）</li>
         <li><strong>Android:</strong> Scene Viewerが使用されます（Chrome推奨）</li>
         <li><strong>注意:</strong> AR機能を使用するには、カメラへのアクセス許可が必要です</li>
@@ -292,8 +301,33 @@
       const axisYButton = document.getElementById('axis-y-button');
       const axisZButton = document.getElementById('axis-z-button');
       const arButton = document.querySelector('.ar-button') || document.getElementById('ar-button-manual');
+      const arPlacementButton = document.getElementById('ar-placement-button');
       
       if (!modelViewer) return;
+      
+      // AR配置タイプの切り替え（壁用/床用）
+      let currentARPlacement = 'wall'; // デフォルトは壁用
+      
+      if (arPlacementButton) {
+        arPlacementButton.addEventListener('click', () => {
+          // 壁用と床用を切り替え
+          currentARPlacement = currentARPlacement === 'wall' ? 'floor' : 'wall';
+          modelViewer.setAttribute('ar-placement', currentARPlacement);
+          
+          // ボタンの表示を更新
+          if (currentARPlacement === 'wall') {
+            arPlacementButton.textContent = '🧱 壁用';
+            arPlacementButton.style.borderColor = '#667eea';
+            arPlacementButton.style.color = '#667eea';
+          } else {
+            arPlacementButton.textContent = '🪑 床用';
+            arPlacementButton.style.borderColor = '#2ecc71';
+            arPlacementButton.style.color = '#2ecc71';
+          }
+          
+          console.log('AR配置タイプを変更:', currentARPlacement);
+        });
+      }
       
       // AR機能のサポートチェック
       function checkARSupport() {
@@ -411,6 +445,121 @@
         setTimeout(checkARButton, 1000);
       });
       
+      // AR機能のサポートをチェック
+      let arSupported = false;
+      let arSupportReason = '';
+      
+      async function checkARSupportDetailed() {
+        const isSecure = location.protocol === 'https:' || location.hostname === 'localhost';
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isAndroid = /Android/.test(navigator.userAgent);
+        const isSafari = /^((?!chrome|android).)*safari|iPhone|iPad)/i.test(navigator.userAgent);
+        const isChrome = /Chrome/.test(navigator.userAgent) && !/Edg/.test(navigator.userAgent);
+        const isEdge = /Edg/.test(navigator.userAgent);
+        const isFirefox = /Firefox/.test(navigator.userAgent);
+        
+        // HTTPSチェック
+        if (!isSecure && location.hostname !== 'localhost') {
+          arSupported = false;
+          arSupportReason = 'AR機能にはHTTPS接続が必要です。現在はHTTP接続です。';
+          return;
+        }
+        
+        // モバイルチェック
+        if (!isMobile) {
+          arSupported = false;
+          arSupportReason = 'AR機能はスマホ（iPhone/Android）でのみ動作します。PCでは使用できません。';
+          return;
+        }
+        
+        // iOSの場合
+        if (isIOS) {
+          // iOSではQuick Lookが使用可能（Safari推奨）
+          if (isSafari) {
+            arSupported = true;
+            arSupportReason = 'iOS Safari: Quick Lookが使用可能です';
+          } else {
+            // Safari以外のiOSブラウザでも試行
+            arSupported = true;
+            arSupportReason = 'iOS: Quick Lookを試行します（Safari推奨）';
+          }
+          return;
+        }
+        
+        // Androidの場合
+        if (isAndroid) {
+          // Chrome/Edge: Scene Viewerが使用可能
+          if (isChrome || isEdge) {
+            arSupported = true;
+            arSupportReason = 'Android Chrome/Edge: Scene Viewerが使用可能です';
+          } else if (isFirefox) {
+            // Firefox: WebXRを試行
+            if ('xr' in navigator) {
+              try {
+                const supported = await navigator.xr.isSessionSupported('immersive-ar');
+                arSupported = supported;
+                arSupportReason = supported ? 'Android Firefox: WebXR ARがサポートされています' : 'Android Firefox: WebXR ARはサポートされていません';
+              } catch (e) {
+                arSupported = false;
+                arSupportReason = 'Android Firefox: WebXRのチェックに失敗しました';
+              }
+            } else {
+              arSupported = false;
+              arSupportReason = 'Android Firefox: WebXRがサポートされていません。Chromeブラウザの使用を推奨します。';
+            }
+          } else {
+            arSupported = false;
+            arSupportReason = 'Android: Chromeブラウザの使用を推奨します。';
+          }
+          return;
+        }
+        
+        // その他のデバイス
+        if ('xr' in navigator) {
+          try {
+            const supported = await navigator.xr.isSessionSupported('immersive-ar');
+            arSupported = supported;
+            arSupportReason = supported ? 'WebXR ARがサポートされています' : 'WebXR ARはサポートされていません';
+          } catch (e) {
+            arSupported = false;
+            arSupportReason = 'WebXRのチェックに失敗しました';
+          }
+        } else {
+          arSupported = false;
+          arSupportReason = 'AR機能がサポートされていないブラウザです。';
+        }
+      }
+      
+      // AR機能のサポートをチェック（初期化時とモデル読み込み後）
+      checkARSupportDetailed().then(() => {
+        console.log('ARサポート:', arSupported, arSupportReason);
+      });
+      
+      // モデルが読み込まれた後にもう一度チェック
+      modelViewer.addEventListener('load', () => {
+        setTimeout(() => {
+          checkARSupportDetailed().then(() => {
+            console.log('ARサポート（再チェック）:', arSupported, arSupportReason);
+            
+            // ARボタンの状態を確認
+            const shadowRoot = modelViewer.shadowRoot;
+            if (shadowRoot) {
+              const arButtonSlot = shadowRoot.querySelector('.slot.ar-button');
+              if (arButtonSlot) {
+                const isEnabled = arButtonSlot.classList.contains('enabled');
+                console.log('ARボタンが有効:', isEnabled);
+                
+                // model-viewerがAR機能を無効にしている場合
+                if (!isEnabled && !arSupported) {
+                  console.warn('AR機能が無効になっています');
+                }
+              }
+            }
+          });
+        }, 1000);
+      });
+      
       // ARボタンのクリックイベント
       function handleARButtonClick(e) {
         if (e) {
@@ -418,6 +567,12 @@
           e.stopPropagation();
         }
         console.log('ARボタンがクリックされました');
+        
+        // AR機能がサポートされていない場合
+        if (!arSupported) {
+          alert('AR機能が使用できません\n\n' + arSupportReason + '\n\n推奨:\n- iOS: Safariブラウザを使用\n- Android: Chromeブラウザを使用\n- HTTPS接続が必要です');
+          return;
+        }
         
         // 手動でARを開始
         try {
@@ -450,11 +605,12 @@
             }
           }
           
+          // AR機能が有効になっていない場合
           console.warn('AR機能を開始する方法が見つかりませんでした');
-          alert('AR機能を開始できませんでした。\n\n確認事項:\n1. スマホでアクセスしていますか？\n2. HTTPS接続ですか？\n3. カメラへのアクセス許可を確認してください。\n4. ブラウザのコンソールでエラーを確認してください。');
+          alert('AR機能を開始できませんでした。\n\n' + arSupportReason + '\n\n確認事項:\n1. スマホでアクセスしていますか？\n2. HTTPS接続ですか？\n3. カメラへのアクセス許可を確認してください。\n4. 推奨ブラウザを使用していますか？\n   - iOS: Safari\n   - Android: Chrome');
         } catch (error) {
           console.error('AR開始エラー:', error);
-          alert('AR機能を開始できませんでした: ' + error.message);
+          alert('AR機能を開始できませんでした: ' + error.message + '\n\n' + arSupportReason);
         }
       }
       
