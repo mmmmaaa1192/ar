@@ -112,8 +112,95 @@
       right: 20px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 15px;
       z-index: 10;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      min-width: 200px;
+    }
+    
+    .axis-control {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .axis-control-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .axis-slider-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+    
+    .axis-slider {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      background: #e0e0e0;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    
+    .axis-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .axis-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .axis-slider.x-slider::-webkit-slider-thumb {
+      background: #e74c3c;
+    }
+    
+    .axis-slider.y-slider::-webkit-slider-thumb {
+      background: #2ecc71;
+    }
+    
+    .axis-slider.z-slider::-webkit-slider-thumb {
+      background: #3498db;
+    }
+    
+    .axis-slider.x-slider::-moz-range-thumb {
+      background: #e74c3c;
+    }
+    
+    .axis-slider.y-slider::-moz-range-thumb {
+      background: #2ecc71;
+    }
+    
+    .axis-slider.z-slider::-moz-range-thumb {
+      background: #3498db;
+    }
+    
+    .axis-value-display {
+      min-width: 50px;
+      text-align: right;
+      font-size: 12px;
+      font-weight: bold;
+      color: #666;
+      font-family: 'Courier New', monospace;
     }
 
     .axis-button {
@@ -208,13 +295,28 @@
       .axis-buttons {
         bottom: 70px;
         right: 15px;
-        gap: 8px;
+        gap: 10px;
+        padding: 12px;
+        min-width: 180px;
       }
 
       .axis-button {
-        width: 45px;
-        height: 45px;
-        font-size: 16px;
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+      }
+      
+      .axis-control-header {
+        gap: 8px;
+      }
+      
+      .axis-slider-container {
+        gap: 8px;
+      }
+      
+      .axis-value-display {
+        min-width: 45px;
+        font-size: 11px;
       }
     }
   </style>
@@ -239,8 +341,8 @@
         interaction-policy="allow-when-focused"
         field-of-view="45deg"
         camera-orbit="0deg 75deg 105%"
-        min-camera-orbit="auto auto 50%"
-        max-camera-orbit="auto auto 200%"
+        min-camera-orbit="auto 0deg 50%"
+        max-camera-orbit="auto 180deg 200%"
         touch-action="none"
         style="width: 100%; height: 100%;"
       >
@@ -267,11 +369,43 @@
         </button>
       </div>
       
-      <!-- XYZ回転ボタン -->
+      <!-- XYZ回転コントロール -->
       <div class="axis-buttons">
-        <button class="axis-button x-axis" id="axis-x-button" data-axis="x">X</button>
-        <button class="axis-button y-axis" id="axis-y-button" data-axis="y">Y</button>
-        <button class="axis-button z-axis" id="axis-z-button" data-axis="z">Z</button>
+        <!-- X軸コントロール -->
+        <div class="axis-control">
+          <div class="axis-control-header">
+            <button class="axis-button x-axis" id="axis-x-button" data-axis="x">X</button>
+            <span style="flex: 1; font-size: 12px; color: #666;">X軸回転</span>
+          </div>
+          <div class="axis-slider-container">
+            <input type="range" class="axis-slider x-slider" id="axis-x-slider" min="-180" max="180" value="0" step="1">
+            <span class="axis-value-display" id="axis-x-value">0°</span>
+          </div>
+        </div>
+        
+        <!-- Y軸コントロール -->
+        <div class="axis-control">
+          <div class="axis-control-header">
+            <button class="axis-button y-axis" id="axis-y-button" data-axis="y">Y</button>
+            <span style="flex: 1; font-size: 12px; color: #666;">Y軸回転</span>
+          </div>
+          <div class="axis-slider-container">
+            <input type="range" class="axis-slider y-slider" id="axis-y-slider" min="-180" max="180" value="0" step="1">
+            <span class="axis-value-display" id="axis-y-value">0°</span>
+          </div>
+        </div>
+        
+        <!-- Z軸コントロール -->
+        <div class="axis-control">
+          <div class="axis-control-header">
+            <button class="axis-button z-axis" id="axis-z-button" data-axis="z">Z</button>
+            <span style="flex: 1; font-size: 12px; color: #666;">Z軸回転</span>
+          </div>
+          <div class="axis-slider-container">
+            <input type="range" class="axis-slider z-slider" id="axis-z-slider" min="-180" max="180" value="0" step="1">
+            <span class="axis-value-display" id="axis-z-value">0°</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -300,10 +434,47 @@
       const axisXButton = document.getElementById('axis-x-button');
       const axisYButton = document.getElementById('axis-y-button');
       const axisZButton = document.getElementById('axis-z-button');
+      const axisXSlider = document.getElementById('axis-x-slider');
+      const axisYSlider = document.getElementById('axis-y-slider');
+      const axisZSlider = document.getElementById('axis-z-slider');
+      const axisXValue = document.getElementById('axis-x-value');
+      const axisYValue = document.getElementById('axis-y-value');
+      const axisZValue = document.getElementById('axis-z-value');
       const arButton = document.querySelector('.ar-button') || document.getElementById('ar-button-manual');
       const arPlacementButton = document.getElementById('ar-placement-button');
       
       if (!modelViewer) return;
+      
+      // 回転範囲の制限（360度自由だが、一方向で壁がある）
+      // Y軸（水平回転）: 360度自由
+      // X軸（垂直回転）: 0-180度（上下の制限）
+      // Z軸: 制限なし（ただし実際には使用しない）
+      
+      // スライダーの範囲設定と初期値
+      if (axisXSlider) {
+        axisXSlider.min = '0';
+        axisXSlider.max = '180';
+        axisXSlider.value = '75';
+        console.log('X軸スライダーを設定:', axisXSlider.value);
+      } else {
+        console.error('X軸スライダーが見つかりません');
+      }
+      if (axisYSlider) {
+        axisYSlider.min = '-180';
+        axisYSlider.max = '180';
+        axisYSlider.value = '0';
+        console.log('Y軸スライダーを設定:', axisYSlider.value);
+      } else {
+        console.error('Y軸スライダーが見つかりません');
+      }
+      if (axisZSlider) {
+        axisZSlider.min = '-180';
+        axisZSlider.max = '180';
+        axisZSlider.value = '0';
+        console.log('Z軸スライダーを設定:', axisZSlider.value);
+      } else {
+        console.error('Z軸スライダーが見つかりません');
+      }
       
       // AR配置タイプの切り替え（壁用/床用）
       let currentARPlacement = 'wall'; // デフォルトは壁用
@@ -675,6 +846,7 @@
       let currentTheta = 0; // 水平回転（Y軸周り）
       let currentPhi = 75;  // 垂直回転（X軸周り）
       let currentRadius = 105; // 距離
+      let isUpdatingFromSlider = false; // スライダーからの更新中フラグ
       
       // カメラ角度を取得
       function getCameraOrbit() {
@@ -691,14 +863,137 @@
       
       // カメラ角度を設定
       function setCameraOrbit(theta, phi, radius) {
+        // 回転範囲の制限
+        // Y軸（theta）: -180度から180度（360度自由）
+        theta = ((theta % 360) + 360) % 360;
+        if (theta > 180) theta -= 360;
+        
+        // X軸（phi）: 0度から180度（上下の制限）
+        phi = Math.max(0, Math.min(180, phi));
+        
         currentTheta = theta;
         currentPhi = phi;
-        currentRadius = radius;
-        modelViewer.setAttribute('camera-orbit', `${theta}deg ${phi}deg ${radius}%`);
+        currentRadius = radius || currentRadius;
+        modelViewer.setAttribute('camera-orbit', `${currentTheta}deg ${currentPhi}deg ${currentRadius}%`);
+        
+        // スライダーの値を更新（スライダーからの更新でない場合）
+        if (!isUpdatingFromSlider) {
+          updateSlidersFromCamera();
+        }
+      }
+      
+      // スライダーの値をカメラ角度から更新
+      function updateSlidersFromCamera() {
+        if (axisXSlider && axisXValue) {
+          axisXSlider.value = currentPhi;
+          axisXValue.textContent = currentPhi.toFixed(0) + '°';
+        }
+        if (axisYSlider && axisYValue) {
+          // Y軸は-180から180度なので、そのまま設定
+          axisYSlider.value = currentTheta;
+          axisYValue.textContent = currentTheta.toFixed(0) + '°';
+        }
+        if (axisZSlider && axisZValue) {
+          // Z軸は使用しないが、表示は維持
+          axisZValue.textContent = '0°';
+        }
+      }
+      
+      // スライダーからカメラ角度を更新
+      function updateCameraFromSliders() {
+        if (isUpdatingFromSlider) {
+          return; // 既に更新中の場合はスキップ
+        }
+        
+        isUpdatingFromSlider = true;
+        
+        try {
+          if (axisXSlider) {
+            const phi = parseFloat(axisXSlider.value);
+            console.log('X軸スライダーから角度を更新:', phi);
+            currentPhi = phi;
+            modelViewer.setAttribute('camera-orbit', `${currentTheta}deg ${currentPhi}deg ${currentRadius}%`);
+          }
+          
+          if (axisYSlider) {
+            const theta = parseFloat(axisYSlider.value);
+            console.log('Y軸スライダーから角度を更新:', theta);
+            currentTheta = theta;
+            modelViewer.setAttribute('camera-orbit', `${currentTheta}deg ${currentPhi}deg ${currentRadius}%`);
+          }
+          
+          // Z軸は使用しない（実際の回転には影響しない）
+        } catch (error) {
+          console.error('スライダーからの角度更新エラー:', error);
+        } finally {
+          isUpdatingFromSlider = false;
+        }
+      }
+      
+      // スライダーのイベントリスナー
+      if (axisXSlider) {
+        console.log('X軸スライダーのイベントリスナーを設定');
+        axisXSlider.addEventListener('input', (e) => {
+          const value = parseFloat(e.target.value);
+          console.log('X軸スライダーが変更されました:', value);
+          if (axisXValue) {
+            axisXValue.textContent = value.toFixed(0) + '°';
+          }
+          updateCameraFromSliders();
+        });
+        axisXSlider.addEventListener('change', (e) => {
+          const value = parseFloat(e.target.value);
+          console.log('X軸スライダーが確定されました:', value);
+          updateCameraFromSliders();
+        });
+      } else {
+        console.error('X軸スライダーが見つかりません（イベントリスナー設定時）');
+      }
+      
+      if (axisYSlider) {
+        console.log('Y軸スライダーのイベントリスナーを設定');
+        axisYSlider.addEventListener('input', (e) => {
+          const value = parseFloat(e.target.value);
+          console.log('Y軸スライダーが変更されました:', value);
+          if (axisYValue) {
+            axisYValue.textContent = value.toFixed(0) + '°';
+          }
+          updateCameraFromSliders();
+        });
+        axisYSlider.addEventListener('change', (e) => {
+          const value = parseFloat(e.target.value);
+          console.log('Y軸スライダーが確定されました:', value);
+          updateCameraFromSliders();
+        });
+      } else {
+        console.error('Y軸スライダーが見つかりません（イベントリスナー設定時）');
+      }
+      
+      if (axisZSlider) {
+        console.log('Z軸スライダーのイベントリスナーを設定');
+        axisZSlider.addEventListener('input', (e) => {
+          const value = parseFloat(e.target.value);
+          console.log('Z軸スライダーが変更されました:', value);
+          if (axisZValue) {
+            axisZValue.textContent = value.toFixed(0) + '°';
+          }
+          // Z軸は実際の回転には影響しない（将来の拡張用）
+        });
+      } else {
+        console.error('Z軸スライダーが見つかりません（イベントリスナー設定時）');
       }
       
       // 初期値を取得
       getCameraOrbit();
+      updateSlidersFromCamera();
+      
+      // カメラ変更を監視してスライダーを更新
+      modelViewer.addEventListener('camera-change', () => {
+        if (!isUpdatingFromSlider) {
+          getCameraOrbit();
+          updateSlidersFromCamera();
+        }
+      });
       
       // ボタン操作の状態
       let activeAxis = null;
